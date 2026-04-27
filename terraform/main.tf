@@ -12,7 +12,7 @@ provider "aws" {
 
 resource "aws_key_pair" "jenkins_deploy" {
   key_name   = "jenkins-deploy"
-  public_key = file("~/.ssh/jenkins-deploy.pub")
+  public_key = file("/home/ubuntu/.ssh/jenkins-deploy.pub")
   lifecycle {
     ignore_changes = [public_key]
   }
