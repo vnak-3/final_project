@@ -11,11 +11,8 @@ provider "aws" {
 }
 
 resource "aws_key_pair" "jenkins_deploy" {
-  key_name   = "jenkins-deploy"
+  key_name   = "jenkins-deploy-v2"
   public_key = file("/home/ubuntu/.ssh/jenkins-deploy.pub")
-  lifecycle {
-    ignore_changes = [public_key]
-  }
 }
 
 resource "aws_security_group" "app_sg" {
