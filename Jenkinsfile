@@ -5,7 +5,7 @@ pipeline {
         SONAR_URL   = "http://100.31.147.77:9000"
         IMAGE_NAME  = "aupp-lms"
         SONAR_KEY   = "AUPP-LMS"
-        GIT_REPO    = "https://github.com/your-username/your-repo.git"
+        GIT_REPO    = "https://github.com/vnak-3/final_project.git"
         GIT_BRANCH  = "main"
         DOCKER_USER = "your-dockerhub-username"
         APP_IP      = "your-app-ec2-public-ip"
@@ -13,12 +13,6 @@ pipeline {
     }
 
     stages {
-
-        stage('Clone') {
-            steps {
-                git url: "${GIT_REPO}", branch: "${GIT_BRANCH}"
-            }
-        }
 
         stage('SonarQube Analysis') {
             steps {
