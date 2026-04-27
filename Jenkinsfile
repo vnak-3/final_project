@@ -51,7 +51,20 @@ pipeline {
 
         stage('Trivy Scan') {
             steps {
-                sh "trivy image --exit-code 1 --severity CRITICAL --no-progress ${IMAGE_NAME}:latest"
+                sh '''
+                    trivy image \
+                      --exit-code 1 \
+                      --severity CRITICAL \
+                      --no-progress \
+                      --format table \
+                      -o trivy-report.txt \
+                      aupp-lms:latest
+
+                    echo "Trivy report generated:"
+                    ls -lh trivy-report.txt
+                    cat trivy-report.txt
+                '''
+                archiveArtifacts artifacts: 'trivy-report.txt', fingerprint: true
             }
         }
 
