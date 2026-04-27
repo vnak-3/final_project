@@ -103,6 +103,8 @@ pipeline {
                         terraform apply -auto-approve
                         terraform output -raw app_ec2_public_ip > /tmp/app_ip.txt
                         echo "App EC2 IP: $(cat /tmp/app_ip.txt)"
+                        echo "Waiting 60s for EC2 to boot..."
+                        sleep 90
                     '''
                 }
             }
