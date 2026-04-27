@@ -8,7 +8,6 @@ pipeline {
         GIT_REPO    = "https://github.com/vnak-3/final_project.git"
         GIT_BRANCH  = "main"
         DOCKER_USER = "vnak3"
-        APP_IP      = "34.228.170.128"
         IMAGE_TAR   = "${WORKSPACE}/aupp-lms.tar"
     }
 
@@ -54,7 +53,7 @@ pipeline {
                       ${IMAGE_NAME}:latest
                 """
             }
-      }
+        }
 
         stage('Push to DockerHub') {
             steps {
@@ -64,10 +63,46 @@ pipeline {
                     passwordVariable: 'DOCKER_PASSWORD'
                 )]) {
                     sh """
-                        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-                        docker tag ${IMAGE_NAME}:latest $DOCKER_USERNAME/${IMAGE_NAME}:latest
-                        docker push $DOCKER_USERNAME/${IMAGE_NAME}:latest
+                        echo "\$DOCKER_PASSWORD" | docker login -u "\$DOCKER_USERNAME" --password-stdin
+                        docker tag ${IMAGE_NAME}:latest \$DOCKER_USERNAME/${IMAGE_NAME}:latest
+                        docker push \$DOCKER_USERNAME/${IMAGE_NAME}:latest
                     """
+                }
+            }
+        }
+
+        stage('Terraform Provision') {
+            steps {
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'AWS_CREDS'
+                ]]) {
+                    sh '''
+                        cd terraform
+
+                        terraform init
+
+                        # Check if EC2 already exists in state
+                        if terraform state show aws_instance.app_ec2 > /dev/null 2>&1; then
+                            echo "EC2 already exists in state, skipping create"
+                        else
+                            # Check if EC2 already exists in AWS by tag
+                            EXISTING_ID=$(aws ec2 describe-instances \
+                                --filters "Name=tag:Name,Values=Course-Management-App" \
+                                          "Name=instance-state-name,Values=running" \
+                                --query "Reservations[0].Instances[0].InstanceId" \
+                                --output text)
+
+                            if [ "$EXISTING_ID" != "None" ] && [ -n "$EXISTING_ID" ]; then
+                                echo "EC2 exists in AWS but not in state, importing..."
+                                terraform import aws_instance.app_ec2 $EXISTING_ID
+                            fi
+                        fi
+
+                        terraform apply -auto-approve
+                        terraform output -raw app_ec2_public_ip > /tmp/app_ip.txt
+                        echo "App EC2 IP: $(cat /tmp/app_ip.txt)"
+                    '''
                 }
             }
         }
@@ -75,13 +110,17 @@ pipeline {
         stage('Deploy to EC2') {
             steps {
                 script {
+                    def appIp = sh(script: "cat /tmp/app_ip.txt", returnStdout: true).trim()
+
                     sh "docker save ${IMAGE_NAME}:latest -o '${IMAGE_TAR}'"
 
                     sshagent(['EC2_SSH_KEY']) {
                         sh """
-                            scp -o StrictHostKeyChecking=no '${IMAGE_TAR}' ubuntu@${APP_IP}:/home/ubuntu/
+                            scp -o StrictHostKeyChecking=no '${IMAGE_TAR}' ubuntu@${appIp}:/home/ubuntu/
 
-                            ssh -o StrictHostKeyChecking=no ubuntu@${APP_IP} '
+                            ssh -o StrictHostKeyChecking=no ubuntu@${appIp} '
+                                timeout 300 bash -c "until command -v docker >/dev/null 2>&1; do sleep 5; done"
+                                timeout 300 bash -c "until systemctl is-active --quiet docker; do sleep 5; done"
                                 docker load -i /home/ubuntu/aupp-lms.tar
                                 docker stop ${IMAGE_NAME} || true
                                 docker rm ${IMAGE_NAME} || true
@@ -91,7 +130,7 @@ pipeline {
                         """
                     }
 
-                    echo "App is live at http://${APP_IP}:3000"
+                    echo "App is live at http://${appIp}:3000"
                 }
             }
         }
@@ -105,7 +144,7 @@ pipeline {
             """
         }
         success {
-            echo "Pipeline completed! App deployed successfully at http://${APP_IP}:3000"
+            echo "Pipeline completed! App deployed successfully."
         }
         failure {
             echo "Pipeline failed. Check the logs above."
