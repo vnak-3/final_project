@@ -47,7 +47,7 @@ pipeline {
         stage('Trivy Scan') {
             steps {
                 sh """
-                    trivy image --severity CRITICAL,HIGH ${IMAGE_NAME}
+                    trivy image -f table -o trivy-report.txt ${IMAGE_NAME}
                       --exit-code 1 \
                       --severity CRITICAL \
                       --no-progress \
