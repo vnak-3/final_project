@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FoodExpress - Order Delicious Food</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --orange: #E8541A;
+    --orange-dark: #C43F0D;
+    --cream: #FDF6EC;
+    --dark: #1A1208;
+    --text: #3D2B1F;
+    --muted: #9E8070;
+    --border: #EDE0D4;
+    --card: #FFFFFF;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(253, 246, 236, 0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--orange);
+    letter-spacing: -0.5px;
+  }
+
+  .logo span { color: var(--dark); }
+
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    text-decoration: none;
+    color: var(--muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--orange); }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .btn {
+    padding: 0.5rem 1.25rem;
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+  }
+
+  .btn-outline {
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--text);
+  }
+
+  .btn-outline:hover { border-color: var(--orange); color: var(--orange); }
+
+  .btn-primary {
+    background: var(--orange);
+    color: white;
+  }
+
+  .btn-primary:hover { background: var(--orange-dark); transform: translateY(-1px); }
+
+  .hero {
+    padding: 5rem 2rem 4rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #FEE9DC;
+    color: var(--orange-dark);
+    padding: 0.4rem 1rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--orange);
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--dark);
+    margin-bottom: 1.25rem;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--orange);
+  }
+
+  .hero p {
+    font-size: 1rem;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 2rem;
+    max-width: 420px;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .hero-actions .btn { padding: 0.75rem 1.75rem; font-size: 0.95rem; }
+
+  .hero-stats {
+    display: flex;
+    gap: 2rem;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--dark);
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 0.2rem;
+  }
+
+  .hero-visual {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .hero-card {
+    background: white;
+    border-radius: 24px;
+    padding: 1.5rem;
+    width: 320px;
+    box-shadow: 0 20px 60px rgba(232, 84, 26, 0.12);
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+
+  .hero-card-img {
+    width: 100%;
+    height: 180px;
+    background: linear-gradient(135deg, #FFD9C0 0%, #FFAA7A 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 5rem;
+    margin-bottom: 1rem;
+  }
+
+  .hero-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    color: var(--dark);
+    margin-bottom: 0.25rem;
+  }
+
+  .hero-card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.75rem;
+  }
+
+  .price { font-weight: 700; color: var(--orange); font-size: 1.1rem; }
+
+  .rating {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .stars { color: #F59E0B; }
+
+  .add-btn {
+    width: 36px;
+    height: 36px;
+    background: var(--orange);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .add-btn:hover { background: var(--orange-dark); transform: scale(1.1); }
+
+  .floating-badge {
+    position: absolute;
+    background: white;
+    border-radius: 16px;
+    padding: 0.75rem 1rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+
+  .floating-badge.top { top: 0; right: -20px; }
+  .floating-badge.bottom { bottom: 20px; left: -30px; }
+
+  .badge-icon { font-size: 1.2rem; margin-right: 0.4rem; }
+
+  section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 2rem;
+  }
+
+  .section-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    color: var(--dark);
+  }
+
+  .section-header a {
+    color: var(--orange);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  .categories {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    scrollbar-width: none;
+  }
+
+  .categories::-webkit-scrollbar { display: none; }
+
+  .category-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    min-width: 90px;
+  }
+
+  .category-pill:hover, .category-pill.active {
+    border-color: var(--orange);
+    background: #FEF0E8;
+  }
+
+  .category-pill .emoji { font-size: 1.75rem; }
+
+  .category-pill span:last-child {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .food-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .food-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    transition: all 0.25s;
+    cursor: pointer;
+  }
+
+  .food-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(232, 84, 26, 0.1);
+    border-color: transparent;
+  }
+
+  .food-img {
+    width: 100%;
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+  }
+
+  .food-body { padding: 1rem 1.25rem 1.25rem; }
+
+  .food-tag {
+    display: inline-block;
+    background: #FEF0E8;
+    color: var(--orange-dark);
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.2rem 0.6rem;
+    border-radius: 50px;
+    margin-bottom: 0.5rem;
+  }
+
+  .food-body h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem;
+    color: var(--dark);
+    margin-bottom: 0.3rem;
+  }
+
+  .food-body p {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 1rem;
+  }
+
+  .food-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .delivery-time {
+    font-size: 0.8rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  footer {
+    background: var(--dark);
+    color: rgba(255,255,255,0.6);
+    text-align: center;
+    padding: 2rem;
+    font-size: 0.85rem;
+  }
+
+  footer strong { color: white; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Food<span>Express</span></div>
+  <ul class="nav-links">
+    <li><a href="#">Menu</a></li>
+    <li><a href="#">Restaurants</a></li>
+    <li><a href="#">Deals</a></li>
+    <li><a href="#">Track Order</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="btn btn-outline">Sign In</button>
+    <button class="btn btn-primary">Order Now</button>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">Free delivery on your first order</div>
+    <h1>Craving something <em>delicious?</em></h1>
+    <p>From your favourite local restaurants to hidden gems — hot meals delivered to your door in under 30 minutes.</p>
+    <div class="hero-actions">
+      <button class="btn btn-primary">Explore Menu</button>
+      <button class="btn btn-outline">View Restaurants</button>
+    </div>
+    <div class="hero-stats">
+      <div>
+        <div class="stat-num">200+</div>
+        <div class="stat-label">Restaurants</div>
+      </div>
+      <div>
+        <div class="stat-num">50k+</div>
+        <div class="stat-label">Happy Customers</div>
+      </div>
+      <div>
+        <div class="stat-num">25min</div>
+        <div class="stat-label">Avg. Delivery</div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="hero-card">
+      <div class="hero-card-img">🍔</div>
+      <h3>Classic Smash Burger</h3>
+      <div style="font-size:0.82rem;color:var(--muted);">Double patty, cheddar, caramelised onions</div>
+      <div class="hero-card-meta">
+        <span class="price">$12.90</span>
+        <span class="rating"><span class="stars">★★★★★</span> 4.9</span>
+        <button class="add-btn">+</button>
+      </div>
+    </div>
+    <div class="floating-badge top">
+      <span class="badge-icon">🚀</span> 22 min delivery
+    </div>
+    <div class="floating-badge bottom">
+      <span class="badge-icon">🔥</span> #1 bestseller today
+    </div>
+  </div>
+</div>
+
+<section>
+  <div class="section-header">
+    <h2>Browse Categories</h2>
+    <a href="#">See all →</a>
+  </div>
+  <div class="categories">
+    <div class="category-pill active"><span class="emoji">🍔</span><span>Burgers</span></div>
+    <div class="category-pill"><span class="emoji">🍕</span><span>Pizza</span></div>
+    <div class="category-pill"><span class="emoji">🍜</span><span>Noodles</span></div>
+    <div class="category-pill"><span class="emoji">🌮</span><span>Tacos</span></div>
+    <div class="category-pill"><span class="emoji">🍣</span><span>Sushi</span></div>
+    <div class="category-pill"><span class="emoji">🥗</span><span>Salads</span></div>
+    <div class="category-pill"><span class="emoji">🍗</span><span>Chicken</span></div>
+    <div class="category-pill"><span class="emoji">🧁</span><span>Desserts</span></div>
+    <div class="category-pill"><span class="emoji">🥤</span><span>Drinks</span></div>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="section-header">
+    <h2>Popular Right Now</h2>
+    <a href="#">View all →</a>
+  </div>
+  <div class="food-grid">
+    <div class="food-card">
+      <div class="food-img" style="background:#FFF0E0;">🍕</div>
+      <div class="food-body">
+        <span class="food-tag">Pizza</span>
+        <h3>Margherita Royale</h3>
+        <p>Wood-fired, fresh basil, buffalo mozzarella, san marzano tomato</p>
+        <div class="food-footer">
+          <span class="price">$14.50</span>
+          <span class="delivery-time">⏱ 28 min</span>
+          <button class="add-btn">+</button>
+        </div>
+      </div>
+    </div>
+    <div class="food-card">
+      <div class="food-img" style="background:#E8F5E9;">🍜</div>
+      <div class="food-body">
+        <span class="food-tag">Noodles</span>
+        <h3>Spicy Tonkotsu Ramen</h3>
+        <p>Rich pork broth, chashu pork, soft egg, bamboo shoots</p>
+        <div class="food-footer">
+          <span class="price">$13.00</span>
+          <span class="delivery-time">⏱ 20 min</span>
+          <button class="add-btn">+</button>
+        </div>
+      </div>
+    </div>
+    <div class="food-card">
+      <div class="food-img" style="background:#FDE8FF;">🌮</div>
+      <div class="food-body">
+        <span class="food-tag">Tacos</span>
+        <h3>Birria Street Tacos</h3>
+        <p>Slow-cooked beef, consommé dipping broth, cilantro, onion</p>
+        <div class="food-footer">
+          <span class="price">$11.80</span>
+          <span class="delivery-time">⏱ 25 min</span>
+          <button class="add-btn">+</button>
+        </div>
+      </div>
+    </div>
+    <div class="food-card">
+      <div class="food-img" style="background:#E8F4FD;">🍣</div>
+      <div class="food-body">
+        <span class="food-tag">Sushi</span>
+        <h3>Dragon Roll</h3>
+        <p>Shrimp tempura, avocado, cucumber, unagi sauce on top</p>
+        <div class="food-footer">
+          <span class="price">$16.90</span>
+          <span class="delivery-time">⏱ 30 min</span>
+          <button class="add-btn">+</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Built by <strong>FoodExpress</strong> · Hosted on AWS EC2 · Deployed via CI/CD Pipeline</p>
+</footer>
+
+<script>
+  document.querySelectorAll('.category-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.category-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+    });
+  });
+
+  document.querySelectorAll('.add-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      btn.textContent = '✓';
+      btn.style.background = '#22C55E';
+      setTimeout(() => {
+        btn.textContent = '+';
+        btn.style.background = 'var(--orange)';
+      }, 1000);
+    });
+  });
+</script>
+
+</body>
+</html>
