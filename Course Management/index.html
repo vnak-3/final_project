@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AUPP Learning Platform</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            color: #e0e0e0;
+        }
+
+        nav {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            position: sticky;
+            top: 0;
+        }
+
+        nav .logo {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #00d2ff;
+            letter-spacing: 1px;
+        }
+
+        nav .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        nav .nav-links a {
+            color: #e0e0e0;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        nav .nav-links a:hover { color: #00d2ff; }
+
+        .hero {
+            text-align: center;
+            padding: 5rem 2rem 3rem;
+        }
+
+        .hero .badge {
+            display: inline-block;
+            background: rgba(0, 210, 255, 0.15);
+            border: 1px solid #00d2ff;
+            color: #00d2ff;
+            padding: 0.4rem 1.2rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+            letter-spacing: 1px;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #00d2ff, #e94560);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: #a0a0b0;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        .hero .btn {
+            display: inline-block;
+            background: linear-gradient(90deg, #00d2ff, #0072ff);
+            color: white;
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            margin: 0.5rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .hero .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 210, 255, 0.3);
+        }
+
+        .hero .btn-outline {
+            background: transparent;
+            border: 2px solid #e94560;
+            color: #e94560;
+        }
+
+        .hero .btn-outline:hover {
+            box-shadow: 0 10px 30px rgba(233, 69, 96, 0.3);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            padding: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-item .number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #00d2ff;
+        }
+
+        .stat-item .label {
+            font-size: 0.85rem;
+            color: #a0a0b0;
+            margin-top: 0.3rem;
+        }
+
+        .features {
+            max-width: 1100px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .feature-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: transform 0.3s, border-color 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: #00d2ff;
+        }
+
+        .feature-card .icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            color: #00d2ff;
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+        }
+
+        .feature-card p {
+            color: #a0a0b0;
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+
+        .pipeline-section {
+            max-width: 900px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+        }
+
+        .pipeline-section h2 {
+            text-align: center;
+            font-size: 1.8rem;
+            color: #e94560;
+            margin-bottom: 2rem;
+        }
+
+        .pipeline {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .pipeline-step {
+            background: rgba(0, 210, 255, 0.1);
+            border: 1px solid #00d2ff;
+            border-radius: 8px;
+            padding: 0.6rem 1.2rem;
+            font-size: 0.85rem;
+            color: #00d2ff;
+            text-align: center;
+        }
+
+        .pipeline-arrow {
+            color: #e94560;
+            font-size: 1.2rem;
+        }
+
+        .status-bar {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .status-item {
+            background: rgba(0, 255, 100, 0.1);
+            border: 1px solid #00ff64;
+            border-radius: 50px;
+            padding: 0.4rem 1rem;
+            font-size: 0.8rem;
+            color: #00ff64;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #00ff64;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        footer {
+            text-align: center;
+            padding: 3rem 2rem 2rem;
+            color: #533483;
+            font-size: 0.85rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            margin-top: 3rem;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="logo">AUPP LMS</div>
+    <ul class="nav-links">
+        <li><a href="#">Dashboard</a></li>
+        <li><a href="#">Courses</a></li>
+        <li><a href="#">Grades</a></li>
+        <li><a href="#">API Docs</a></li>
+    </ul>
+</nav>
+
+<section class="hero">
+    <div class="badge">🚀 New Deployment — v2.0</div>
+    <h1>AUPP Internal<br>Learning Platform</h1>
+    <p>Powering academic excellence through secure, scalable, and automated infrastructure for students and faculty.</p>
+    <a href="/api/status" class="btn">Check API Status</a>
+    <a href="/api/menu" class="btn btn-outline">View API Endpoints</a>
+</section>
+
+<div class="stats">
+    <div class="stat-item">
+        <div class="number">99.9%</div>
+        <div class="label">Uptime SLA</div>
+    </div>
+    <div class="stat-item">
+        <div class="number">5k+</div>
+        <div class="label">Active Students</div>
+    </div>
+    <div class="stat-item">
+        <div class="number">12</div>
+        <div class="label">API Endpoints</div>
+    </div>
+    <div class="stat-item">
+        <div class="number">100%</div>
+        <div class="label">CI/CD Automated</div>
+    </div>
+</div>
+
+<div class="status-bar">
+    <div class="status-item"><div class="status-dot"></div> Jenkins Pipeline</div>
+    <div class="status-item"><div class="status-dot"></div> SonarQube</div>
+    <div class="status-item"><div class="status-dot"></div> Docker Container</div>
+    <div class="status-item"><div class="status-dot"></div> EC2 Instance</div>
+    <div class="status-item"><div class="status-dot"></div> Prometheus</div>
+</div>
+
+<div class="features">
+    <div class="feature-card">
+        <div class="icon">🔒</div>
+        <h3>Security First</h3>
+        <p>All API endpoints utilize OAuth2 and Secure Tokens to protect student data and academic records.</p>
+    </div>
+    <div class="feature-card">
+        <div class="icon">⚡</div>
+        <h3>High Performance</h3>
+        <p>Optimized for high-volume interactions during finals and grading periods with auto-scaling support.</p>
+    </div>
+    <div class="feature-card">
+        <div class="icon">📊</div>
+        <h3>Real-time Monitoring</h3>
+        <p>Prometheus and Grafana dashboards provide live metrics on system health and performance.</p>
+    </div>
+    <div class="feature-card">
+        <div class="icon">🔄</div>
+        <h3>CI/CD Pipeline</h3>
+        <p>Automated deployments via Jenkins ensure fast, reliable, and consistent feature delivery.</p>
+    </div>
+    <div class="feature-card">
+        <div class="icon">🐳</div>
+        <h3>Containerized</h3>
+        <p>Docker containers ensure consistent environments from development through to production.</p>
+    </div>
+    <div class="feature-card">
+        <div class="icon">☁️</div>
+        <h3>Cloud Native</h3>
+        <p>Terraform provisions AWS infrastructure automatically ensuring reproducible deployments every time.</p>
+    </div>
+</div>
+
+<section class="pipeline-section">
+    <h2>CI/CD Pipeline Flow</h2>
+    <div class="pipeline">
+        <div class="pipeline-step">GitHub Push</div>
+        <div class="pipeline-arrow">→</div>
+        <div class="pipeline-step">Jenkins</div>
+        <div class="pipeline-arrow">→</div>
+        <div class="pipeline-step">SonarQube</div>
+        <div class="pipeline-arrow">→</div>
+        <div class="pipeline-step">Trivy Scan</div>
+        <div class="pipeline-arrow">→</div>
+        <div class="pipeline-step">Docker Build</div>
+        <div class="pipeline-arrow">→</div>
+        <div class="pipeline-step">Terraform</div>
+        <div class="pipeline-arrow">→</div>
+        <div class="pipeline-step">Deploy EC2</div>
+    </div>
+</section>
+
+<footer>
+    © 2026 American University of Phnom Penh | IT Development Team | DevOps Pipeline v2.0
+</footer>
+
+</body>
+</html>
