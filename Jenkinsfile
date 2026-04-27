@@ -93,35 +93,42 @@ pipeline {
         }
 
        stage('Deploy to EC2') {
-          steps {
-              script {
-                  def appIp = sh(script: "cat /tmp/app_ip.txt", returnStdout: true).trim()
+            steps {
+                script {
+                    def appIp = sh(script: "cat /tmp/app_ip.txt", returnStdout: true).trim()
 
-                  sh "docker save ${IMAGE_NAME}:latest -o ${IMAGE_TAR}"
+                    sh "docker save ${IMAGE_NAME}:latest -o ${IMAGE_TAR}"
 
-                  withCredentials([file(credentialsId: 'EC2_SSH_KEY', variable: 'KEY')]) {
-                      sh """
-                      chmod 600 \$KEY
+                    withCredentials([sshUserPrivateKey(
+                        credentialsId: 'EC2_SSH_KEY',
+                        keyFileVariable: 'KEY',
+                        usernameVariable: 'USER'
+                    )]) {
 
-                      ssh -i \$KEY -o StrictHostKeyChecking=no ubuntu@${appIp} "echo Connected"
+                        sh """
+                        chmod 600 \$KEY
 
-                      scp -i \$KEY -o StrictHostKeyChecking=no ${IMAGE_TAR} ubuntu@${appIp}:/home/ubuntu/
+                        echo "Testing SSH connection..."
+                        ssh -i \$KEY -o StrictHostKeyChecking=no \$USER@${appIp} "echo Connected"
 
-                      ssh -i \$KEY -o StrictHostKeyChecking=no ubuntu@${appIp} '
-                          docker load -i /home/ubuntu/aupp-lms.tar
-                          docker stop ${IMAGE_NAME} || true
-                          docker rm ${IMAGE_NAME} || true
-                          docker run -d --name ${IMAGE_NAME} -p 3000:3000 ${IMAGE_NAME}:latest
-                          docker ps
-                      '
-                      """
-                  }
+                        echo "Copying image..."
+                        scp -i \$KEY -o StrictHostKeyChecking=no ${IMAGE_TAR} \$USER@${appIp}:/home/\$USER/
 
-                  // ✅ MUST be inside script block
-                  echo "App is live at http://${appIp}:3000"
-              }
-          }
-      }
+                        echo "Deploying container..."
+                        ssh -i \$KEY -o StrictHostKeyChecking=no \$USER@${appIp} '
+                            docker load -i /home/ubuntu/aupp-lms.tar
+                            docker stop ${IMAGE_NAME} || true
+                            docker rm ${IMAGE_NAME} || true
+                            docker run -d --name ${IMAGE_NAME} -p 3000:3000 ${IMAGE_NAME}:latest
+                            docker ps
+                        '
+                        """
+                    }
+
+                    echo "App is live at http://${appIp}:3000"
+                }
+            }
+        }
     }
 
     post {
