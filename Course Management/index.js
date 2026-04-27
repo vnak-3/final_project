@@ -24,5 +24,5 @@ app.get('/menu', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`FoodExpress API running on port ${PORT}`);
+  console.log(`Course Management API running on port ${PORT}`);
 });
