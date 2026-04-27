@@ -86,7 +86,7 @@ pipeline {
                         terraform output -raw app_ec2_public_ip > /tmp/app_ip.txt
 
                         echo "Waiting for EC2..."
-                        sleep 30
+                        sleep 10
                     '''
                 }
             }
