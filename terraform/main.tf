@@ -12,7 +12,7 @@ provider "aws" {
 
 resource "aws_key_pair" "jenkins_deploy" {
   key_name   = "jenkins-deploy"
-  public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAEbm0DNhACrtCE0TT99xxaREgvZ+bt9bveKhXsWcoZB jenkins-deploy"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCx3PpAjMF9UZuHPoPxvLmpu8e4DXW7mVMH13GoShGyAj9xM4oTf25yHgtl1vz0Syuxx8XKnqo4oe0nu3wPlpFSNlMpplhhl79DP/NIOobP0tdaQEfcQPXYooIeWnIUpxY8bTHd0Q25JUxnUyoNRGei3+ECivriAUNvgdQMBd3pZ6tOr7aT4poCMIlz86NMZF8YoBJcLVrWLkkLEAqgnyjtMgkDaypSXW9UJCiI9WsuWfYRewu84eSBXZBb6MBrH8O7bWxDDmLnWTEC26lJEQO+PlQH0ipbd9ZMa+bu1ZKu+/xtvTTI7DDRko297qAbH3ZJFSq37vbSDXBPty47eLvT"
 
   lifecycle {
     ignore_changes = [public_key]
