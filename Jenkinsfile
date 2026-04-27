@@ -20,9 +20,11 @@ pipeline {
                         def scannerHome = tool 'SonarScanner'
                         sh """
                             ${scannerHome}/bin/sonar-scanner \
-                              -Dsonar.projectKey=${SONAR_KEY} \
+                              -Dsonar.projectKey=AUPP-LMS \
                               -Dsonar.sources=. \
-                              -Dsonar.host.url=${SONAR_URL}
+                              -Dsonar.host.url=http://100.31.147.77:9000 \
+                              -Dsonar.exclusions=**/node_modules/**,**/.DS_Store,**/dist/**,**/.next/** \
+                              -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
                         """
                     }
                 }
