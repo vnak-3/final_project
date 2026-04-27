@@ -104,7 +104,7 @@ pipeline {
                         terraform output -raw app_ec2_public_ip > /tmp/app_ip.txt
                         echo "App EC2 IP: $(cat /tmp/app_ip.txt)"
                         echo "Waiting 60s for EC2 to boot..."
-                        sleep 60
+                        sleep 30
                     '''
                 }
             }
@@ -117,21 +117,22 @@ pipeline {
 
                     sh "docker save ${IMAGE_NAME}:latest -o '${IMAGE_TAR}'"
 
-                    sshagent(['EC2_SSH_KEY']) {
-                        sh """
-                            scp -o StrictHostKeyChecking=no '${IMAGE_TAR}' ubuntu@${appIp}:/home/ubuntu/
+                    withCredentials([file(credentialsId: 'EC2_SSH_KEY', variable: 'KEY')]) {
 
-                            ssh -o StrictHostKeyChecking=no ubuntu@${appIp} '
-                                timeout 300 bash -c "until command -v docker >/dev/null 2>&1; do sleep 5; done"
-                                timeout 300 bash -c "until systemctl is-active --quiet docker; do sleep 5; done"
-                                docker load -i /home/ubuntu/aupp-lms.tar
-                                docker stop ${IMAGE_NAME} || true
-                                docker rm ${IMAGE_NAME} || true
-                                docker run -d --name ${IMAGE_NAME} -p 3000:3000 ${IMAGE_NAME}:latest
-                                docker ps
-                            '
-                        """
-                    }
+                                sh """
+                        scp -i \$KEY -o StrictHostKeyChecking=no '${IMAGE_TAR}' ubuntu@${appIp}:/home/ubuntu/
+
+                        ssh -i \$KEY -o StrictHostKeyChecking=no ubuntu@${appIp} '
+                            timeout 300 bash -c "until command -v docker >/dev/null 2>&1; do sleep 5; done"
+                            timeout 300 bash -c "until systemctl is-active --quiet docker; do sleep 5; done"
+                            docker load -i /home/ubuntu/aupp-lms.tar
+                            docker stop ${IMAGE_NAME} || true
+                            docker rm ${IMAGE_NAME} || true
+                            docker run -d --name ${IMAGE_NAME} -p 3000:3000 ${IMAGE_NAME}:latest
+                            docker ps
+                        '
+                    """
+        }
 
                     echo "App is live at http://${appIp}:3000"
                 }
