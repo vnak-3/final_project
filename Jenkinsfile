@@ -7,8 +7,8 @@ pipeline {
         SONAR_KEY   = "AUPP-LMS"
         GIT_REPO    = "https://github.com/vnak-3/final_project.git"
         GIT_BRANCH  = "main"
-        DOCKER_USER = "your-dockerhub-username"
-        APP_IP      = "your-app-ec2-public-ip"
+        DOCKER_USER = "vnak3"
+        APP_IP      = "34.228.170.128"
         IMAGE_TAR   = "${WORKSPACE}/aupp-lms.tar"
     }
 
@@ -40,7 +40,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t ${IMAGE_NAME}:latest ."
+                sh "docker build -t ${IMAGE_NAME}:latest 'Course Management/'"
             }
         }
 
@@ -54,7 +54,7 @@ pipeline {
                       ${IMAGE_NAME}:latest
                 """
             }
-        }
+      }
 
         stage('Push to DockerHub') {
             steps {
