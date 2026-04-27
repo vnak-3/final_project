@@ -30,6 +30,11 @@ pipeline {
             }
 }
 
+        stage('Checkout Code') {
+            steps {
+                git branch: "${GIT_BRANCH}", url: "${GIT_REPO}"
+            }
+        }
         stage('Quality Gate') {
             steps {
                 timeout(time: 10, unit: 'MINUTES') {
@@ -72,34 +77,36 @@ pipeline {
                     $class: 'AmazonWebServicesCredentialsBinding',
                     credentialsId: 'AWS_CREDS'
                 ]]) {
-                    sh '''
-                        cd terraform
+                   sh """
+                        chmod 600 \$KEY
 
-                        terraform init -migrate-state -force-copy -input=false
+                        echo "Testing SSH connection..."
+                        ssh -i \$KEY -o StrictHostKeyChecking=no ubuntu@${appIp} "echo Connected"
 
-                        # Check if EC2 already exists in state
-                        if terraform state show aws_instance.app_ec2 > /dev/null 2>&1; then
-                            echo "EC2 already exists in state, skipping create"
-                        else
-                            # Check if EC2 already exists in AWS by tag
-                            EXISTING_ID=$(aws ec2 describe-instances \
-                                --filters "Name=tag:Name,Values=Course-Management-App" \
-                                          "Name=instance-state-name,Values=running" \
-                                --query "Reservations[0].Instances[0].InstanceId" \
-                                --output text)
+                        echo "Copying image..."
+                        scp -i \$KEY -o StrictHostKeyChecking=no ${IMAGE_TAR} ubuntu@${appIp}:/home/ubuntu/
 
-                            if [ "$EXISTING_ID" != "None" ] && [ -n "$EXISTING_ID" ]; then
-                                echo "EC2 exists in AWS but not in state, importing..."
-                                terraform import aws_instance.app_ec2 $EXISTING_ID
-                            fi
-                        fi
+                        echo "Deploying container..."
+                        ssh -i \$KEY -o StrictHostKeyChecking=no ubuntu@${appIp} '
+                            set -e
 
-                        terraform apply -auto-approve
-                        terraform output -raw app_ec2_public_ip > /tmp/app_ip.txt
-                        echo "App EC2 IP: $(cat /tmp/app_ip.txt)"
-                        echo "Waiting 60s for EC2 to boot..."
-                        sleep 30
-                    '''
+                            echo "Waiting for Docker..."
+                            timeout 300 bash -c "until command -v docker >/dev/null 2>&1; do sleep 5; done"
+                            timeout 300 bash -c "until systemctl is-active --quiet docker; do sleep 5; done"
+
+                            echo "Loading image..."
+                            docker load -i /home/ubuntu/aupp-lms.tar
+
+                            echo "Restarting container..."
+                            docker stop ${IMAGE_NAME} || true
+                            docker rm ${IMAGE_NAME} || true
+
+                            docker run -d --name ${IMAGE_NAME} -p 3000:3000 ${IMAGE_NAME}:latest
+
+                            echo "Running containers:"
+                            docker ps
+                        '
+                        """
                 }
             }
         }
