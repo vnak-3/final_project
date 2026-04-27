@@ -1,3 +1,11 @@
+terraform {
+  backend "s3" {
+    bucket = "final-project-vnak3"
+    key    = "aupp-lms/terraform.tfstate"
+    region = "us-east-1"
+  }
+}
+
 provider "aws" {
   region = var.aws_region
 }
@@ -5,6 +13,10 @@ provider "aws" {
 resource "aws_key_pair" "jenkins_deploy" {
   key_name   = "jenkins-deploy"
   public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAEbm0DNhACrtCE0TT99xxaREgvZ+bt9bveKhXsWcoZB jenkins-deploy"
+
+  lifecycle {
+    ignore_changes = [public_key]
+  }
 }
 
 resource "aws_security_group" "app_sg" {
@@ -20,7 +32,7 @@ resource "aws_security_group" "app_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["3.88.37.248/32"]
   }
 
   ingress {
@@ -70,6 +82,10 @@ resource "aws_instance" "app_ec2" {
     volume_size = 20
   }
 
+  lifecycle {
+    ignore_changes = [user_data, ami]
+  }
+
   tags = {
     Name = "Course-Management-App"
   }
@@ -90,7 +106,6 @@ resource "aws_instance" "app_ec2" {
     systemctl start docker
 
     usermod -aG docker ubuntu
-    chmod 666 /var/run/docker.sock || true
 
     until docker info >/dev/null 2>&1; do
       sleep 2
@@ -99,4 +114,8 @@ resource "aws_instance" "app_ec2" {
     touch /home/ubuntu/docker-ready.flag
     chown ubuntu:ubuntu /home/ubuntu/docker-ready.flag
   EOF
+}
+
+output "app_ec2_public_ip" {
+  value = aws_instance.app_ec2.public_ip
 }
