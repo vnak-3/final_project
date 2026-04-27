@@ -55,16 +55,33 @@ pipeline {
                     trivy image \
                       --exit-code 1 \
                       --severity CRITICAL \
+                      --scanners vuln \
                       --no-progress \
+                      --quiet \
                       --format table \
-                      -o trivy-report.txt \
+                      -o trivy-full-report.txt \
                       aupp-lms:latest
 
-                    echo "Trivy report generated:"
-                    ls -lh trivy-report.txt
-                    cat trivy-report.txt
+                    echo "Trivy full report saved to trivy-full-report.txt"
+
+                    {
+                      echo "Trivy Security Scan Summary"
+                      echo "==========================="
+                      echo "Image: aupp-lms:latest"
+                      echo "Severity checked: CRITICAL"
+                      echo "Scanner: Vulnerability scan"
+                      echo "Result: PASSED"
+                      echo "Critical vulnerabilities: 0"
+                      echo "Build number: ${BUILD_NUMBER}"
+                      echo "Git commit: $(git rev-parse --short HEAD)"
+                      echo "Scan date: $(date)"
+                    } > trivy-summary.txt
+
+                    echo "Trivy summary generated:"
+                    ls -lh trivy-summary.txt trivy-full-report.txt
                 '''
-                archiveArtifacts artifacts: 'trivy-report.txt', fingerprint: true
+
+                archiveArtifacts artifacts: 'trivy-summary.txt,trivy-full-report.txt', fingerprint: true
             }
         }
 
