@@ -81,7 +81,7 @@ pipeline {
                     sh '''
                         cd terraform
 
-                        terraform init
+                        terraform init -migrate-state -force-copy -input=false
 
                         # Check if EC2 already exists in state
                         if terraform state show aws_instance.app_ec2 > /dev/null 2>&1; then
