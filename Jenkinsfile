@@ -77,75 +77,51 @@ pipeline {
                     $class: 'AmazonWebServicesCredentialsBinding',
                     credentialsId: 'AWS_CREDS'
                 ]]) {
-                   sh """
-                        chmod 600 \$KEY
+                    sh '''
+                        cd terraform
 
-                        echo "Testing SSH connection..."
-                        ssh -i \$KEY -o StrictHostKeyChecking=no ubuntu@${appIp} "echo Connected"
+                        terraform init -input=false
+                        terraform apply -auto-approve
 
-                        echo "Copying image..."
-                        scp -i \$KEY -o StrictHostKeyChecking=no ${IMAGE_TAR} ubuntu@${appIp}:/home/ubuntu/
+                        terraform output -raw app_ec2_public_ip > /tmp/app_ip.txt
 
-                        echo "Deploying container..."
-                        ssh -i \$KEY -o StrictHostKeyChecking=no ubuntu@${appIp} '
-                            set -e
-
-                            echo "Waiting for Docker..."
-                            timeout 300 bash -c "until command -v docker >/dev/null 2>&1; do sleep 5; done"
-                            timeout 300 bash -c "until systemctl is-active --quiet docker; do sleep 5; done"
-
-                            echo "Loading image..."
-                            docker load -i /home/ubuntu/aupp-lms.tar
-
-                            echo "Restarting container..."
-                            docker stop ${IMAGE_NAME} || true
-                            docker rm ${IMAGE_NAME} || true
-
-                            docker run -d --name ${IMAGE_NAME} -p 3000:3000 ${IMAGE_NAME}:latest
-
-                            echo "Running containers:"
-                            docker ps
-                        '
-                        """
+                        echo "Waiting for EC2..."
+                        sleep 30
+                    '''
                 }
             }
         }
 
-        stage('Deploy to EC2') {
-            steps {
-                script {
-                    def appIp = sh(script: "cat /tmp/app_ip.txt", returnStdout: true).trim()
+       stage('Deploy to EC2') {
+          steps {
+              script {
+                  def appIp = sh(script: "cat /tmp/app_ip.txt", returnStdout: true).trim()
 
-                    sh "docker save ${IMAGE_NAME}:latest -o ${IMAGE_TAR}"
+                  sh "docker save ${IMAGE_NAME}:latest -o ${IMAGE_TAR}"
 
-                    withCredentials([file(credentialsId: 'EC2_SSH_KEY', variable: 'KEY')]) {
+                  withCredentials([file(credentialsId: 'EC2_SSH_KEY', variable: 'KEY')]) {
+                      sh """
+                      chmod 600 \$KEY
 
-                        sh """
-                        chmod 600 \$KEY
+                      ssh -i \$KEY -o StrictHostKeyChecking=no ubuntu@${appIp} "echo Connected"
 
-                        echo "Testing SSH connection..."
-                        ssh -i \$KEY -o StrictHostKeyChecking=no ubuntu@${appIp} "echo Connected"
+                      scp -i \$KEY -o StrictHostKeyChecking=no ${IMAGE_TAR} ubuntu@${appIp}:/home/ubuntu/
 
-                        echo "Copying image..."
-                        scp -i \$KEY -o StrictHostKeyChecking=no ${IMAGE_TAR} ubuntu@${appIp}:/home/ubuntu/
+                      ssh -i \$KEY -o StrictHostKeyChecking=no ubuntu@${appIp} '
+                          docker load -i /home/ubuntu/aupp-lms.tar
+                          docker stop ${IMAGE_NAME} || true
+                          docker rm ${IMAGE_NAME} || true
+                          docker run -d --name ${IMAGE_NAME} -p 3000:3000 ${IMAGE_NAME}:latest
+                          docker ps
+                      '
+                      """
+                  }
 
-                        echo "Deploying container..."
-                        ssh -i \$KEY -o StrictHostKeyChecking=no ubuntu@${appIp} '
-                            docker load -i /home/ubuntu/aupp-lms.tar
-                            docker stop ${IMAGE_NAME} || true
-                            docker rm ${IMAGE_NAME} || true
-                            docker run -d --name ${IMAGE_NAME} -p 3000:3000 ${IMAGE_NAME}:latest
-                            docker ps
-                        '
-                        """
-
-                    }
-
-                    // ✅ FIX: keep it inside script block
-                    echo "App is live at http://${appIp}:3000"
-                }
-            }
-        }
+                  // ✅ MUST be inside script block
+                  echo "App is live at http://${appIp}:3000"
+              }
+          }
+      }
     }
 
     post {
